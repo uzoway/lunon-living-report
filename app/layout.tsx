@@ -26,10 +26,31 @@ const sourceSerifItalic = localFont({
   adjustFontFallback: 'Times New Roman',
 });
 
+const SITE = 'https://uzookafor.com/lunon-living-report/';
+const TITLE = "Living Report concept: Japan's Silver Economy 2020–2050";
+const DESCRIPTION =
+  'Unofficial concept by Uzo Okafor. Not affiliated with Lunon. Report text from Lunon Deep Research (MIT), unmodified.';
+
 export const metadata: Metadata = {
-  title: "Living Report concept: Japan's Silver Economy 2020–2050",
-  description:
-    'Unofficial concept by Uzo Okafor. Not affiliated with Lunon. Report text from Lunon Deep Research (MIT), unmodified.',
+  metadataBase: new URL(SITE),
+  title: TITLE,
+  description: DESCRIPTION,
+  // What a shared link unfurls to in messages and posts.
+  openGraph: {
+    type: 'website',
+    url: SITE,
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [
+      {
+        url: 'og.png',
+        width: 2400,
+        height: 1260,
+        alt: 'The report with a source card open in the margin, beside a chart',
+      },
+    ],
+  },
+  twitter: {card: 'summary_large_image'},
 };
 
 export const viewport: Viewport = {
