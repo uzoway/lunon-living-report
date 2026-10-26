@@ -97,8 +97,10 @@ export interface Series {
 }
 
 export type Chart =
-  | {kind: 'stacked-bars'; years: number[]; series: Series[]; total: Series}
-  | {kind: 'lines'; years: number[]; series: Series[]}
+  /** Parts of a total by year (10.1), drawn as small multiples. */
+  | {kind: 'parts'; years: number[]; series: Series[]; total: Series}
+  /** `notes` are percentage columns, shown as labels rather than lines. */
+  | {kind: 'lines'; years: number[]; series: Series[]; notes: Series[]}
   | {
       kind: 'range';
       label: string;

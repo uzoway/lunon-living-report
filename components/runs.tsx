@@ -7,11 +7,22 @@ import {JaText} from './ja-text.tsx';
 
 export type SourceLookup = ReadonlyMap<string, Source>;
 
+const GLUE_LIMIT = 12;
+
 /**
  * Inline report text. A citation is drawn as one marker, glued to the word
- * before it so a line never starts with a marker.
+ * before it so a line never starts with a marker. `after` (a provenance
+ * label) is glued to the end the same way.
  */
-export function Runs({runs, sources}: {runs: Run[]; sources: SourceLookup}) {
+export function Runs({
+  runs,
+  sources,
+  after,
+}: {
+  runs: Run[];
+  sources: SourceLookup;
+  after?: ReactNode;
+}) {
   const nodes: ReactNode[] = [];
   runs.forEach((run, i) => {
     if (run.kind === 'citation') {
@@ -22,18 +33,27 @@ export function Runs({runs, sources}: {runs: Run[]; sources: SourceLookup}) {
       return;
     }
     const next = runs[i + 1];
-    if (next?.kind !== 'citation') {
+    const marker = next?.kind === 'citation' ? next : undefined;
+    const isEnd = i + (marker ? 1 : 0) === runs.length - 1;
+    const tail = isEnd ? after : undefined;
+    if (!marker && !tail) {
       nodes.push(<Text key={i} run={run} />);
       return;
     }
-    const lastWord = run.text.search(/\S+$/);
-    const head = lastWord === -1 ? run.text : run.text.slice(0, lastWord);
-    const tail = lastWord === -1 ? '' : run.text.slice(lastWord);
+    // Glue the last word, but at most its last few characters: Japanese has
+    // no spaces, and gluing a whole Japanese phrase would stop it wrapping.
+    // A Latin word split here still can't break, since spans aren't spaces.
+    const lastWord = run.text.search(/\S+\s*$/);
+    const split = Math.max(
+      lastWord === -1 ? run.text.length : lastWord,
+      run.text.length - GLUE_LIMIT
+    );
     nodes.push(
-      <Text key={i} run={{...run, text: head}} />,
+      <Text key={i} run={{...run, text: run.text.slice(0, split)}} />,
       <span key={`${i}-glue`} className="glue">
-        <Text run={{...run, text: tail}} />
-        <Marker citation={next} sources={sources} />
+        <Text run={{...run, text: run.text.slice(split)}} />
+        {marker && <Marker citation={marker} sources={sources} />}
+        {tail}
       </span>
     );
   });

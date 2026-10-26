@@ -1,12 +1,17 @@
 import {Brief} from '@/components/brief.tsx';
+import {ClaimChip} from '@/components/claim-chip.tsx';
 import {HeadingText} from '@/components/heading-text.tsx';
+import {ProvenanceToggle} from '@/components/provenance-toggle.tsx';
+import {QuestionsMenu} from '@/components/questions-menu.tsx';
 import {Reader} from '@/components/reader.tsx';
+import {ReaderProvider} from '@/components/reader-state.tsx';
 import {
   ContentsMenu,
   Outline,
   type NavItem,
 } from '@/components/section-nav.tsx';
 import {SourceCards} from '@/components/source-cards.tsx';
+import {SourcesIndex} from '@/components/sources-index.tsx';
 import {ThemeToggle} from '@/components/theme-toggle.tsx';
 import {selectBrief} from '@/lib/report/brief.ts';
 import {readReportMarkdown} from '@/lib/report/content.ts';
@@ -20,6 +25,7 @@ const REPO_URL = 'https://github.com/uzoway/lunon-living-report';
 const report = parseReport(readReportMarkdown());
 const brief = selectBrief(report);
 const sources = new Map(report.sources.map(s => [s.id, s]));
+const sections = report.sections.map(({id, title}) => ({id, title}));
 const navItems: NavItem[] = [
   {id: 'brief', title: 'Brief'},
   ...report.sections
@@ -30,19 +36,26 @@ const navItems: NavItem[] = [
 // Next.js only reads a default export here (an exception to named exports).
 export default function Page() {
   return (
-    <>
+    <ReaderProvider
+      title={report.title}
+      claims={report.claims}
+      sources={report.sources}
+      sections={sections}
+    >
       <a className="skip-link" href="#main">
         Skip to the report
       </a>
       <header className="site-header">
-        <div className="frame flex h-full items-center gap-2">
-          <p className="shrink-0 text-[0.9375rem] font-semibold min-[70rem]:pl-2.5">
+        <div className="frame flex h-full items-center gap-1">
+          <p className="brand">
             Living Report
-            <span className="ml-2 font-normal text-muted">concept</span>
+            <span className="brand-note">concept</span>
           </p>
-          <div className="flex min-w-0 flex-1 justify-end min-[48rem]:justify-start">
+          <div className="flex min-w-0 flex-1">
             <ContentsMenu items={navItems} />
           </div>
+          <ProvenanceToggle figures={brief.evidence.figures} />
+          <QuestionsMenu />
           <ThemeToggle />
         </div>
       </header>
@@ -61,7 +74,15 @@ export default function Page() {
             </p>
           </div>
           <Brief brief={brief} sources={sources} />
+          <p className="provenance-legend">
+            Provenance labels, worked out by this page&rsquo;s parser:{' '}
+            <strong>Cited</strong> means the claim links a source;{' '}
+            <strong>Modeled</strong> means the report calls the figure its own
+            model output; <strong>Not attributed</strong> means neither. They
+            show where a figure points, not whether a source supports it.
+          </p>
           <Reader sections={report.sections} sources={sources} />
+          <SourcesIndex sources={report.sources} />
         </main>
         <footer className="page-footer">
           <p>Unofficial concept by Uzo Okafor. Not affiliated with Lunon.</p>
@@ -78,7 +99,9 @@ export default function Page() {
         <div id="rail" className="rail" aria-hidden />
       </div>
 
-      <SourceCards sources={report.sources} />
-    </>
+      <SourceCards />
+      <ClaimChip />
+      <p id="announcer" className="sr-only" aria-live="polite" />
+    </ReaderProvider>
   );
 }

@@ -4,7 +4,7 @@ A reading layer for Lunon Deep Research output: the report's evidence, one actio
 
 > Unofficial concept by Uzo Okafor. Not affiliated with Lunon. Report text from Lunon Deep Research (MIT), unmodified.
 
-**Status:** in progress. The parser, the Brief and the Reader with source cards are done; Trace, provenance labels, charts and questions are next. [PRODUCT-NOTES.md](PRODUCT-NOTES.md) holds the brief and every decision so far.
+**Status:** in progress. Every feature is built; the full QA pass and the committed Playwright suite are next. [PRODUCT-NOTES.md](PRODUCT-NOTES.md) holds the brief and every decision so far.
 
 ## Why this exists
 
@@ -26,7 +26,7 @@ At build time, `parseReport()` reads `content/report-51.md` and returns a typed 
   - **Cited** otherwise, if the claim has a citation.
   - **Not attributed** if it has neither.
   - Modeled wins over cited, because a modeled figure often cites its inputs. Labels say where a figure points, never whether the source supports it.
-- **Charts:** a table is charted when it's a numeric series with years across the header or down the first column. A series is charted only if every cell reads as a number once `~`, `¥`, `tn`, `%` and `+` are stripped. A bold total row makes a stacked bar chart. Percentage columns aren't drawn on an amounts axis. A "Scenario" table with one numeric column becomes a range bar.
+- **Charts:** a table is charted when it's a numeric series with years across the header or down the first column. A series is charted only if every cell reads as a number once `~`, `¥`, `tn`, `%` and `+` are stripped. A bold total row makes the other rows its parts, drawn as small multiples. Percentage columns aren't drawn on an amounts axis; next to amounts they become labels. A "Scenario" table with one numeric column becomes a range bar.
 - **Timeline:** the report's one mermaid `timeline` block is read into periods and events, without a Mermaid dependency.
 - **Anything else** in the markdown throws at build time, so nothing is dropped silently.
 

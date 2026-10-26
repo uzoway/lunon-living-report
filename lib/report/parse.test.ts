@@ -257,7 +257,7 @@ describe('charts', () => {
       charted.map(t => [sectionOf(t), t.chart.kind]),
       [
         ['s-2-1', 'lines'],
-        ['s-10-1', 'stacked-bars'],
+        ['s-10-1', 'parts'],
         ['s-10-2', 'lines'],
         ['s-10-3', 'range'],
       ]
@@ -274,9 +274,9 @@ describe('charts', () => {
         continue;
       }
       const series =
-        chart.kind === 'stacked-bars'
+        chart.kind === 'parts'
           ? [...chart.series, chart.total]
-          : chart.series;
+          : [...chart.series, ...chart.notes];
       for (const {label, values} of series) {
         chart.years.forEach((year, i) => {
           // Years run across the header (10.1) or down the first column.
@@ -292,16 +292,16 @@ describe('charts', () => {
     }
   });
 
-  it('stacks 10.1 only because its categories add up to its total', () => {
-    const chart = charted.find(t => t.chart.kind === 'stacked-bars')?.chart;
-    assert.ok(chart?.kind === 'stacked-bars');
+  it("treats 10.1's categories as parts because they add up to its total", () => {
+    const chart = charted.find(t => t.chart.kind === 'parts')?.chart;
+    assert.ok(chart?.kind === 'parts');
     chart.years.forEach((year, i) => {
       const sum = chart.series.reduce((n, s) => n + (s.values[i] ?? 0), 0);
       assert.equal(sum, chart.total.values[i], `${year}`);
     });
   });
 
-  it('leaves the Divergence column out of 10.2', () => {
+  it("keeps 10.2's Divergence column as notes, not a line", () => {
     const chart = charted.find(t =>
       t.header.some(c => textOf(c).trim() === 'Divergence')
     )?.chart;
@@ -309,6 +309,10 @@ describe('charts', () => {
     assert.deepEqual(
       chart.series.map(s => s.label),
       ['Bottom-up (¥tn)', 'Top-down (¥tn)']
+    );
+    assert.deepEqual(
+      chart.notes.map(s => s.label),
+      ['Divergence']
     );
   });
 });

@@ -22,7 +22,7 @@ describe('parseNumber', () => {
 describe('chartFor', () => {
   const row = (cells: string[], bold = false) => ({cells, bold});
 
-  it('stacks rows when years run across and a bold total row exists', () => {
+  it('treats rows as parts when years run across and a bold total row exists', () => {
     const chart = chartFor({
       header: ['Category', '2020', '2050'],
       rows: [
@@ -32,7 +32,7 @@ describe('chartFor', () => {
       ],
     });
     assert.deepEqual(chart, {
-      kind: 'stacked-bars',
+      kind: 'parts',
       years: [2020, 2050],
       series: [
         {label: 'Food', values: [28, 31]},
@@ -42,7 +42,7 @@ describe('chartFor', () => {
     });
   });
 
-  it('draws lines when years run down, leaving out % and text columns', () => {
+  it('draws lines when years run down, with % columns as notes', () => {
     const chart = chartFor({
       header: [
         'Year',
@@ -63,6 +63,7 @@ describe('chartFor', () => {
         {label: 'Bottom-up (¥tn)', values: [99, 140]},
         {label: 'Top-down (¥tn)', values: [102, 141]},
       ],
+      notes: [{label: 'Divergence', values: [3, 0.7]}],
     });
   });
 

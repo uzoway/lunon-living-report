@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import {domainOf, normalizeUrl, shortName, yearOf} from './sources.ts';
+import {
+  domainOf,
+  groupByDomain,
+  normalizeUrl,
+  shortName,
+  yearOf,
+} from './sources.ts';
 
 describe('normalizeUrl', () => {
   it('lowercases the host and drops the fragment', () => {
@@ -85,6 +91,37 @@ describe('shortName', () => {
     assert.equal(
       shortName({number: 1, domain: 'ipss.go.jp'}),
       '[1] ipss.go.jp'
+    );
+  });
+});
+
+describe('groupByDomain', () => {
+  const source = (number: number, domain: string, citationCount: number) => ({
+    id: `s${number}`,
+    number,
+    url: `https://${domain}/${number}`,
+    label: `Source ${number}`,
+    domain,
+    citationCount,
+  });
+
+  it('puts the most cited domains and sources first', () => {
+    const groups = groupByDomain([
+      source(1, 'ipss.go.jp', 29),
+      source(2, 'stat.go.jp', 4),
+      source(3, 'ipss.go.jp', 2),
+      source(4, 'stat.go.jp', 5),
+    ]);
+    assert.deepEqual(
+      groups.map(g => [
+        g.domain,
+        g.citationCount,
+        g.sources.map(s => s.number),
+      ]),
+      [
+        ['ipss.go.jp', 31, [1, 3]],
+        ['stat.go.jp', 9, [4, 2]],
+      ]
     );
   });
 });

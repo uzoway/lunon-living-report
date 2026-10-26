@@ -93,10 +93,7 @@ export function ContentsMenu({items}: {items: NavItem[]}) {
       <Popover.Trigger className="contents-trigger">
         <span className="font-semibold">Contents</span>
         {currentTitle && (
-          <span
-            className="hidden truncate text-muted min-[22.5rem]:block"
-            aria-hidden
-          >
+          <span className="contents-current truncate text-muted" aria-hidden>
             <HeadingText text={currentTitle} />
           </span>
         )}

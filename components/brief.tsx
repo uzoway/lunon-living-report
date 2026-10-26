@@ -1,7 +1,8 @@
-import type {Brief as BriefData, RangeChart} from '@/lib/report/brief.ts';
-import {scaleLinear} from '@/lib/chart/scale.ts';
+import {chartSummary} from '@/lib/chart/summary.ts';
+import type {Brief as BriefData} from '@/lib/report/brief.ts';
 import {textOf} from '@/lib/report/parse.ts';
 
+import {RangeBar} from './charts/range-bar.tsx';
 import {JaText} from './ja-text.tsx';
 import {Sentences} from './reader.tsx';
 import type {SourceLookup} from './runs.tsx';
@@ -23,7 +24,13 @@ export function Brief({
       <p className="brief-answer">
         <Sentences sentences={[brief.headline]} sources={sources} />
       </p>
-      <RangeBar range={brief.range} sectionId={brief.rangeSectionId} />
+      <figure className="mt-7">
+        <RangeBar
+          range={brief.range}
+          caption={<a href={`#${brief.rangeSectionId}`}>Scenarios in 10.3</a>}
+        />
+        <figcaption className="sr-only">{chartSummary(brief.range)}</figcaption>
+      </figure>
 
       <p className="brief-prose mt-8">
         <Sentences sentences={brief.verdict} sources={sources} />
@@ -56,42 +63,6 @@ export function Brief({
         supports it.
       </p>
     </section>
-  );
-}
-
-function RangeBar({range, sectionId}: {range: RangeChart; sectionId: string}) {
-  const values = range.points.map(p => p.value);
-  const x = scaleLinear([Math.min(...values), Math.max(...values)], [0, 100]);
-  const summary = range.points.map(p => `${p.label} ${p.value}`).join(', ');
-  return (
-    <figure className="range">
-      <div
-        className="range-track"
-        role="img"
-        aria-label={`${range.label}: ${summary}`}
-      >
-        {range.points.map(point => (
-          <div
-            key={point.label}
-            className="range-point"
-            data-base={point.label === 'Base' ? '' : undefined}
-            style={{
-              left: `${x(point.value)}%`,
-              translate: `${-x(point.value)}%`,
-            }}
-            aria-hidden
-          >
-            <span className="range-value">{point.value}</span>
-            <span className="range-tick" />
-            <span className="range-name">{point.label}</span>
-          </div>
-        ))}
-      </div>
-      <figcaption>
-        {range.label}, by scenario.{' '}
-        <a href={`#${sectionId}`}>Scenarios in 10.3</a>
-      </figcaption>
-    </figure>
   );
 }
 

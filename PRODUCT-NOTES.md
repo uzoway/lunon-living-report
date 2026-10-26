@@ -160,8 +160,8 @@ Only chart tables that are numeric series. Each chart has direct labels instead 
 | Report section | Chart |
 |---|---|
 | 2.1, population by year | Two lines: total population and 65+ population |
-| 10.1, category by year (2020–2050) | Stacked bars, or small multiples if stacked reads badly. Highlight that care and health carry almost all the growth. |
-| 10.2, bottom-up vs top-down | Two lines with the divergence shown |
+| 10.1, category by year (2020–2050) | Small multiples on one shared scale: seven long category names can't be direct-labelled on a stack at phone width. The two categories that grow most (care and health) carry the accent. |
+| 10.2, bottom-up vs top-down | Two lines with the gap between them shaded, and the table's Divergence column as labels under the years |
 | 10.3, scenarios | One range bar: 125, 140, 155 |
 | 12, cohort timeline | A simple timeline component |
 
@@ -272,8 +272,8 @@ components/                 Brief, Reader, CitationMarker, SourceCard, SourcesIn
   - Known misses, kept rather than patched one phrase at a time: "±15% model uncertainty" (6.1, labelled cited) and the "Internal scenario" rows in the 7.3 and 8.3 tables (labelled not attributed).
   - The tests use real sentences from the report for each state.
 - **Chartable table:** a numeric series in either orientation, with four-digit years across the header row (as in 10.1) or down the first column (as in 10.2 and 2.1). A series is charted only if all its cells read as numbers once `~`, `¥`, `tn`, `%` and `+` are stripped. Text columns such as "Basis" or "Driver" stay in the table view only.
-  - Years across: each row is a series. A bold row is the total; with one, the chart is stacked bars and the total is the bar-end label, not a segment. Without one, lines.
-  - Years down: each numeric column is a series. Percentage columns can't share an axis with amounts, so they're charted only when nothing else is (10.2's Divergence column stays in the table).
+  - Years across: each row is a series. A bold row is the total, which makes the other rows its parts (drawn as small multiples, with the total as a line of text). Without one, lines.
+  - Years down: each numeric column is a series. Percentage columns can't share an axis with amounts, so next to amounts they become labels under the years (10.2's Divergence column).
   - Scenarios: a table whose first column is "Scenario" and that has exactly one numeric column is a range bar. Only 10.3 matches; 5.3 and 6.3 have ranges like "~13–15" and stay tables.
   - Any table that doesn't match these rules stays a table.
 - **Mermaid:** parse the single `timeline` block into `{ title, periods: { period, events[] }[] }` and render it with the Timeline component. Don't add a Mermaid dependency.
@@ -282,7 +282,7 @@ components/                 Brief, Reader, CitationMarker, SourceCard, SourcesIn
 
 ### State
 - React state for UI.
-- The URL (`?trace=s12#s-10-2`) for anything worth sharing.
+- The URL for anything worth sharing: `?trace=s12&claim=c45` holds a trace and the claim it's on, and the hash stays free for section links (`#s-10-2`).
 - `localStorage` for questions, with every read and write in try/catch, and a page that still works when storage isn't available.
 
 ### Performance
@@ -460,6 +460,18 @@ It's committed so it can be re-run.
 19. Markers are plain server-rendered buttons. One click listener on the page opens cards, so the 180 markers ship no JavaScript and opening a card never re-renders the text.
 20. Japanese runs of up to 8 characters don't break across lines (住居 stays whole), and year ranges in headings stay on one line.
 21. The reading column is 37rem: 64–67 characters per line measured in WebKit and Chrome.
+
+**2026-10-26, step (c): Trace, provenance, charts and questions**
+22. 10.1 is drawn as small multiples instead of stacked bars (the brief's fallback). Seven long category names, with Japanese, can't be labelled directly on a stack at 343px.
+23. 10.2 keeps its Divergence column as labels under the years, with the gap between the two lines shaded. The values come from the table, not from a calculation.
+24. Chart colors are an emphasis pair: the accent for the series the chart is about, a gray for context. The dataviz validator passes them on colorblind separation (ΔE ≥ 18.5), normal-vision separation and contrast in both themes. Its lightness and chroma checks are for categorical palettes, so they don't apply to a gray.
+25. Charts have direct labels and no legend, as the brief asks. Each series is labelled at its end, with a leader line where labels had to move apart. Values are labelled at the first and last year; the Table view has the rest. There are no hover tooltips, because the table is one tap away and every value appears there.
+26. The trace is kept in the URL as `?trace=s1&claim=c45`. The hash stays free for section links. Stepping by mouse scrolls smoothly; stepping by keyboard, reloading or reduced motion jumps. A traced claim inside a charted table switches that table to its Table view.
+27. Questions pin to a claim in two ways. Picking a sentence offers "Ask about this" above it; selecting text to copy doesn't. The panel's "New question" has a claim list grouped by section, which is the keyboard route to any claim. Source cards also offer "Ask about this claim".
+28. Deleting a question can be undone until the panel closes. Questions are saved in localStorage when the browser allows it. When it doesn't, the panel says so and they last until the page is left.
+29. Provenance labels are rendered on the server and hidden with CSS, so turning them on sets one attribute. They stay on the same line as the end of their sentence.
+30. Header: Provenance and Questions sit beside the theme toggle. On phones they're icons that keep their names for screen readers, and the brand text is hidden below 400px.
+31. The Sources index follows the report's empty References heading, labelled as built by this page, with a "Show every claim" button for each source.
 
 ---
 

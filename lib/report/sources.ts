@@ -46,3 +46,33 @@ export function yearOf(label: string): number | undefined {
 export function shortName(source: Pick<Source, 'number' | 'domain'>): string {
   return `[${source.number}] ${source.domain}`;
 }
+
+export interface DomainGroup {
+  domain: string;
+  sources: Source[];
+  citationCount: number;
+}
+
+/**
+ * Sources grouped by domain for the Sources index: the most cited domains
+ * first, and within each, the most cited sources first.
+ */
+export function groupByDomain(sources: Source[]): DomainGroup[] {
+  const groups = new Map<string, Source[]>();
+  for (const source of sources) {
+    groups.set(source.domain, [...(groups.get(source.domain) ?? []), source]);
+  }
+  const byCitations = (a: Source, b: Source) =>
+    b.citationCount - a.citationCount || a.number - b.number;
+  return [...groups]
+    .map(([domain, members]) => ({
+      domain,
+      sources: members.sort(byCitations),
+      citationCount: members.reduce((n, s) => n + s.citationCount, 0),
+    }))
+    .sort(
+      (a, b) =>
+        b.citationCount - a.citationCount ||
+        (a.sources[0]?.number ?? 0) - (b.sources[0]?.number ?? 0)
+    );
+}

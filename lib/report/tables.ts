@@ -51,27 +51,29 @@ function yearsAcross({header, rows}: PlainTable): Chart | undefined {
   }
   if (series.length === 0) return undefined;
   const years = yearCells.map(Number);
-  // A total row only makes sense on top of a stack; without one, draw lines.
+  // A total row means the other rows are its parts; without one, draw lines.
   return total
-    ? {kind: 'stacked-bars', years, series, total}
-    : {kind: 'lines', years, series};
+    ? {kind: 'parts', years, series, total}
+    : {kind: 'lines', years, series, notes: []};
 }
 
 function yearsDown(table: PlainTable): Chart | undefined {
   const firstCells = table.rows.map(row => row.cells[0] ?? '');
   if (firstCells.length < 2 || !firstCells.every(isYear)) return undefined;
   const columns = numericColumns(table);
+  if (columns.length === 0) return undefined;
   // Percentages can't share an axis with amounts (10.2's Divergence column),
-  // so they're charted only when nothing else is.
-  const amounts = columns.filter(
-    c => !c.cells.every(cell => cell.includes('%'))
-  );
-  const charted = amounts.length > 0 ? amounts : columns;
-  if (charted.length === 0) return undefined;
+  // so next to amounts they become labels instead of lines.
+  const isPercent = (c: Column) => c.cells.every(cell => cell.includes('%'));
+  const amounts = columns.filter(c => !isPercent(c));
+  const series = amounts.length > 0 ? amounts : columns;
+  const notes = amounts.length > 0 ? columns.filter(isPercent) : [];
+  const plain = ({label, values}: Column): Series => ({label, values});
   return {
     kind: 'lines',
     years: firstCells.map(Number),
-    series: charted.map(({label, values}) => ({label, values})),
+    series: series.map(plain),
+    notes: notes.map(plain),
   };
 }
 

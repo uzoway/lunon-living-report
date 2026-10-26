@@ -6,35 +6,19 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
+  type MouseEvent,
   type RefObject,
 } from 'react';
 
 import {shortName} from '@/lib/report/sources.ts';
-import type {Source} from '@/lib/report/types.ts';
 
 import {CloseIcon} from './close-icon.tsx';
-import {JaText} from './ja-text.tsx';
+import {useReader} from './reader-state.tsx';
 import {Sheet} from './sheet.tsx';
+import {SourceItem} from './source-item.tsx';
+import {useLayoutMode} from './use-layout-mode.ts';
 
-/** Where the card opens: beside the text, under the marker, or from below. */
-type Mode = 'rail' | 'popover' | 'sheet';
-
-const RAIL = '(min-width: 70rem)';
-const POPOVER = '(min-width: 48rem)';
 const TITLE_ID = 'source-card-title';
-
-function subscribe(onChange: () => void) {
-  const queries = [RAIL, POPOVER].map(query => matchMedia(query));
-  queries.forEach(query => query.addEventListener('change', onChange));
-  return () =>
-    queries.forEach(query => query.removeEventListener('change', onChange));
-}
-
-function currentMode(): Mode {
-  if (matchMedia(RAIL).matches) return 'rail';
-  return matchMedia(POPOVER).matches ? 'popover' : 'sheet';
-}
 
 interface Measurable {
   getBoundingClientRect(): DOMRect;
@@ -57,12 +41,13 @@ interface Card {
  * page instead of a component per marker keeps the report static: opening a
  * card re-renders this, not the text.
  */
-export function SourceCards({sources}: {sources: Source[]}) {
-  const byId = useMemo(() => new Map(sources.map(s => [s.id, s])), [sources]);
-  const mode = useSyncExternalStore(subscribe, currentMode, (): Mode => 'rail');
+export function SourceCards() {
+  const {sources} = useReader();
+  const mode = useLayoutMode();
   const [card, setCard] = useState<Card | null>(null);
-  // Closing by clicking elsewhere leaves focus where the reader clicked.
-  const dismissedOutside = useRef(false);
+  // Focus stays put when the reader clicked elsewhere or moved on to a trace
+  // or a question; otherwise closing returns it to the marker.
+  const keepFocus = useRef(false);
   // Exit animations call returnFocus with props from before the close, so it
   // reads the live card from here.
   const latest = useRef(card);
@@ -71,7 +56,7 @@ export function SourceCards({sources}: {sources: Source[]}) {
   }, [card]);
 
   useEffect(() => {
-    function onClick(event: MouseEvent) {
+    function onClick(event: globalThis.MouseEvent) {
       const marker =
         event.target instanceof Element
           ? event.target.closest('button[data-sources]')
@@ -117,15 +102,33 @@ export function SourceCards({sources}: {sources: Source[]}) {
     };
   }, [card, mode]);
 
-  const cited = card?.sourceIds.flatMap(id => byId.get(id) ?? []) ?? [];
+  const cited = card?.sourceIds.flatMap(id => sources.get(id) ?? []) ?? [];
   const title =
     cited.length === 1 && cited[0]
       ? shortName(cited[0])
       : `${cited.length} sources`;
+  // Markers in the Brief repeat the report; questions pin to the Reader's.
+  const claimId = card?.marker.closest<HTMLElement>('#report [data-claim]')
+    ?.dataset.claim;
   const open = card?.open ?? false;
 
+  function close() {
+    setCard(current => current && {...current, open: false});
+  }
+
   function onOpenChange(next: boolean) {
-    if (!next) setCard(current => current && {...current, open: false});
+    if (!next) close();
+  }
+
+  // The card's own trace and question buttons hand the reader on.
+  function onAction(event: MouseEvent) {
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[data-trace], [data-ask]')
+    ) {
+      keepFocus.current = true;
+      close();
+    }
   }
 
   function focusCard(event: Event) {
@@ -141,9 +144,31 @@ export function SourceCards({sources}: {sources: Source[]}) {
     const current = latest.current;
     // Still open means the reader moved to another marker's card.
     if (!current || current.open) return;
-    if (!dismissedOutside.current) current.marker.focus();
-    dismissedOutside.current = false;
+    if (!keepFocus.current) current.marker.focus();
+    keepFocus.current = false;
   }
+
+  const body = (
+    <div onClick={onAction}>
+      <ul className="card-body">
+        {cited.map(source => (
+          <SourceItem
+            key={source.id}
+            source={source}
+            named={cited.length > 1}
+            nearClaim={claimId}
+          />
+        ))}
+      </ul>
+      {claimId && (
+        <div className="card-footer">
+          <button type="button" className="text-button" data-ask={claimId}>
+            Ask about this claim
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   if (mode === 'sheet') {
     return (
@@ -154,7 +179,7 @@ export function SourceCards({sources}: {sources: Source[]}) {
         onOpenAutoFocus={focusCard}
         onCloseAutoFocus={returnFocus}
       >
-        <SourceList sources={cited} />
+        {body}
       </Sheet>
     );
   }
@@ -184,7 +209,7 @@ export function SourceCards({sources}: {sources: Source[]}) {
             ) {
               event.preventDefault();
             } else {
-              dismissedOutside.current = true;
+              keepFocus.current = true;
             }
           }}
         >
@@ -196,57 +221,9 @@ export function SourceCards({sources}: {sources: Source[]}) {
               <CloseIcon />
             </Popover.Close>
           </div>
-          <SourceList sources={cited} />
+          {body}
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
-  );
-}
-
-function SourceList({sources}: {sources: Source[]}) {
-  const single = sources.length === 1;
-  return (
-    <ul className="card-body">
-      {sources.map(source => (
-        <li key={source.id} className="source">
-          {!single && <p className="source-name">{shortName(source)}</p>}
-          <p className="source-label">
-            <JaText text={source.label} />
-          </p>
-          <p className="source-meta">
-            {source.year && `${source.year} · `}
-            {source.citationCount === 1
-              ? 'Cited once in this report'
-              : `Cited ${source.citationCount} times in this report`}
-          </p>
-          <a
-            className="source-open"
-            href={source.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open source
-            <span className="sr-only">
-              {` ${shortName(source)}, opens in a new tab`}
-            </span>
-            <ExternalIcon />
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function ExternalIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M14 5h5v5M19 5l-8 8M18 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
