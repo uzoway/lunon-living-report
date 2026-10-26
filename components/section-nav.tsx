@@ -3,6 +3,7 @@
 import * as Popover from '@radix-ui/react-popover';
 import {useEffect, useRef, useState} from 'react';
 
+import {mayReturnFocus} from './focus.ts';
 import {HeadingText} from './heading-text.tsx';
 
 export interface NavItem {
@@ -100,12 +101,15 @@ export function ContentsMenu({items}: {items: NavItem[]}) {
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
+          aria-label="Contents"
           className="card max-h-[min(70dvh,32rem)] p-2"
           align="start"
           sideOffset={6}
           collisionPadding={16}
           onCloseAutoFocus={event => {
-            if (navigated.current) event.preventDefault();
+            if (navigated.current || !mayReturnFocus(event)) {
+              event.preventDefault();
+            }
             navigated.current = false;
           }}
         >

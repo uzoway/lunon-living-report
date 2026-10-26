@@ -1,9 +1,9 @@
 import {Brief} from '@/components/brief.tsx';
-import {ClaimChip} from '@/components/claim-chip.tsx';
 import {HeadingText} from '@/components/heading-text.tsx';
 import {ProvenanceToggle} from '@/components/provenance-toggle.tsx';
 import {QuestionsMenu} from '@/components/questions-menu.tsx';
 import {Reader} from '@/components/reader.tsx';
+import {ClaimChip} from '@/components/claim-chip.tsx';
 import {ReaderProvider} from '@/components/reader-state.tsx';
 import {
   ContentsMenu,
@@ -26,6 +26,11 @@ const report = parseReport(readReportMarkdown());
 const brief = selectBrief(report);
 const sources = new Map(report.sources.map(s => [s.id, s]));
 const sections = report.sections.map(({id, title}) => ({id, title}));
+const claims = report.claims.map(({id, sectionId, sourceIds}) => ({
+  id,
+  sectionId,
+  sourceIds,
+}));
 const navItems: NavItem[] = [
   {id: 'brief', title: 'Brief'},
   ...report.sections
@@ -38,7 +43,7 @@ export default function Page() {
   return (
     <ReaderProvider
       title={report.title}
-      claims={report.claims}
+      claims={claims}
       sources={report.sources}
       sections={sections}
     >
@@ -82,7 +87,7 @@ export default function Page() {
             show where a figure points, not whether a source supports it.
           </p>
           <Reader sections={report.sections} sources={sources} />
-          <SourcesIndex sources={report.sources} />
+          <SourcesIndex />
         </main>
         <footer className="page-footer">
           <p>Unofficial concept by Uzo Okafor. Not affiliated with Lunon.</p>

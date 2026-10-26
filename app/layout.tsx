@@ -1,21 +1,26 @@
 import type {Metadata, Viewport} from 'next';
-import {Source_Sans_3, Source_Serif_4} from 'next/font/google';
+import localFont from 'next/font/local';
 import type {ReactNode} from 'react';
 
 import './globals.css';
 
-// Source Serif 4 for long reading (its optical sizes tighten for display and
-// open up for text); Source Sans 3 for UI, tables and numbers.
-const serif = Source_Serif_4({
-  subsets: ['latin'],
-  axes: ['opsz'],
-  style: ['normal', 'italic'],
+// Source Serif 4 for long reading, subset to the characters report 51 uses
+// (scripts/subset-serif.ts) so the first load stays small. Japanese falls
+// back to the system's Mincho. UI, tables and numbers use the system face
+// (see globals.css), so controls feel native and there's one font less.
+const serif = localFont({
+  src: './fonts/source-serif-4-report.woff2',
+  weight: '200 900',
   variable: '--font-source-serif',
 });
 
-const sans = Source_Sans_3({
-  subsets: ['latin'],
-  variable: '--font-source-sans',
+// The italic sets 15 phrases deep in the report, so it isn't preloaded.
+const serifItalic = localFont({
+  src: './fonts/source-serif-4-report-italic.woff2',
+  weight: '400',
+  style: 'italic',
+  variable: '--font-source-serif-italic',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -41,7 +46,7 @@ export default function RootLayout({children}: {children: ReactNode}) {
   return (
     <html
       lang="en"
-      className={`${serif.variable} ${sans.variable}`}
+      className={`${serif.variable} ${serifItalic.variable}`}
       suppressHydrationWarning
     >
       <head>

@@ -19,6 +19,12 @@ import {announce} from './announce.ts';
 import {useQuestions} from './questions-store.ts';
 import {TraceBar} from './trace-bar.tsx';
 
+/**
+ * What the client needs to know about a claim. Its text is already on the
+ * page, so it isn't sent again (see claim-text.ts).
+ */
+export type ClaimRef = Pick<Claim, 'id' | 'sectionId' | 'sourceIds'>;
+
 export interface Trace {
   source: Source;
   /** Every claim that cites the source, in reading order. */
@@ -34,7 +40,7 @@ export interface Panel {
 
 interface Reader {
   title: string;
-  claims: Claim[];
+  claims: ClaimRef[];
   sources: ReadonlyMap<string, Source>;
   sectionTitles: ReadonlyMap<string, string>;
   trace: Trace | null;
@@ -90,7 +96,7 @@ export function ReaderProvider({
   children,
 }: {
   title: string;
-  claims: Claim[];
+  claims: ClaimRef[];
   sources: Source[];
   sections: Array<{id: string; title: string}>;
   children: ReactNode;

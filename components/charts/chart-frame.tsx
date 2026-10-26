@@ -2,6 +2,8 @@
 
 import {useEffect, useRef, useState, type ReactNode} from 'react';
 
+import {JaText} from '../ja-text.tsx';
+
 /**
  * A chart with its table one tap away. The table keeps the report's rows (and
  * their claims), so a trace that lands on a row switches to it.
@@ -43,7 +45,9 @@ export function ChartFrame({
       </div>
       <figure className="chart" hidden={view !== 'chart'}>
         {chart}
-        <figcaption className="sr-only">{summary}</figcaption>
+        <figcaption className="sr-only">
+          <JaText text={summary} />
+        </figcaption>
       </figure>
       <div hidden={view !== 'table'}>{table}</div>
     </div>

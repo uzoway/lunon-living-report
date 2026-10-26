@@ -4,13 +4,14 @@ import * as Popover from '@radix-ui/react-popover';
 import {useEffect, useMemo, useRef, useState, type FormEvent} from 'react';
 
 import {questionsToMarkdown, type Question} from '@/lib/questions.ts';
-import type {Claim} from '@/lib/report/types.ts';
 
 import {announce} from './announce.ts';
+import {claimText} from './claim-text.ts';
 import {CloseIcon} from './close-icon.tsx';
+import {mayReturnFocus} from './focus.ts';
 import {JaText} from './ja-text.tsx';
 import {setQuestions, useQuestions, useStorable} from './questions-store.ts';
-import {useReader} from './reader-state.tsx';
+import {useReader, type ClaimRef} from './reader-state.tsx';
 import {Sheet} from './sheet.tsx';
 import {useLayoutMode} from './use-layout-mode.ts';
 
@@ -46,7 +47,9 @@ export function QuestionsMenu() {
 
   function onCloseAutoFocus(event: Event) {
     event.preventDefault();
-    if (!leftForClaim.current) trigger.current?.focus();
+    if (!leftForClaim.current && mayReturnFocus(event)) {
+      trigger.current?.focus();
+    }
     leftForClaim.current = false;
   }
 
@@ -130,7 +133,11 @@ function QuestionsBody({onLeaveForClaim}: {onLeaveForClaim: () => void}) {
     questions.filter(q => q.claimId === claim.id).map(q => ({q, claim}))
   );
   const markdown = () =>
-    questionsToMarkdown(questions, {title, claims, sectionTitles});
+    questionsToMarkdown(questions, {
+      title,
+      claims: claims.map(c => ({...c, text: claimText(c.id)})),
+      sectionTitles,
+    });
 
   function remove(question: Question) {
     const index = questions.indexOf(question);
@@ -271,14 +278,16 @@ function Composer({claimId}: {claimId: string}) {
   const {claims, sectionTitles, setPanel} = useReader();
   const questions = useQuestions();
   const [text, setText] = useState('');
-  const claim = claims.find(c => c.id === claimId);
+  // Every claim, grouped by section, with its text read from the page.
   const groups = useMemo(() => {
-    const bySection = new Map<string, Claim[]>();
-    for (const c of claims) {
-      bySection.set(c.sectionId, [...(bySection.get(c.sectionId) ?? []), c]);
+    const bySection = new Map<string, Array<{id: string; text: string}>>();
+    for (const {id, sectionId} of claims) {
+      const entry = {id, text: claimText(id)};
+      bySection.set(sectionId, [...(bySection.get(sectionId) ?? []), entry]);
     }
     return [...bySection];
   }, [claims]);
+  const quote = useMemo(() => claimText(claimId), [claimId]);
 
   function save(event: FormEvent) {
     event.preventDefault();
@@ -317,9 +326,9 @@ function Composer({claimId}: {claimId: string}) {
           </optgroup>
         ))}
       </select>
-      {claim && (
+      {quote && (
         <blockquote className="composer-quote">
-          <JaText text={claim.text} />
+          <JaText text={quote} />
         </blockquote>
       )}
       <label className="composer-label" htmlFor="question-text">
@@ -359,7 +368,7 @@ function QuestionItem({
   onDelete,
 }: {
   question: Question;
-  claim: Claim;
+  claim: ClaimRef;
   position: number;
   sectionTitle: string;
   onGoTo: () => void;
@@ -369,6 +378,7 @@ function QuestionItem({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(question.text);
   const editor = useRef<HTMLTextAreaElement>(null);
+  const quote = useMemo(() => claimText(claim.id), [claim.id]);
 
   // Editing continues the question, so the caret starts at its end.
   useEffect(() => {
@@ -398,7 +408,7 @@ function QuestionItem({
       </p>
       <button type="button" className="question-claim" onClick={onGoTo}>
         <span className="sr-only">Go to claim: </span>
-        <JaText text={claim.text} />
+        <JaText text={quote} />
       </button>
       {editing ? (
         <form className="composer" onSubmit={save}>

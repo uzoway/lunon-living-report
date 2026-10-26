@@ -13,6 +13,7 @@ import {
 import {shortName} from '@/lib/report/sources.ts';
 
 import {CloseIcon} from './close-icon.tsx';
+import {mayReturnFocus} from './focus.ts';
 import {useReader} from './reader-state.tsx';
 import {Sheet} from './sheet.tsx';
 import {SourceItem} from './source-item.tsx';
@@ -144,7 +145,7 @@ export function SourceCards() {
     const current = latest.current;
     // Still open means the reader moved to another marker's card.
     if (!current || current.open) return;
-    if (!keepFocus.current) current.marker.focus();
+    if (!keepFocus.current && mayReturnFocus(event)) current.marker.focus();
     keepFocus.current = false;
   }
 

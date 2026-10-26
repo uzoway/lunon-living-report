@@ -10,7 +10,8 @@ export interface Question {
 
 export interface ExportContext {
   title: string;
-  claims: Claim[];
+  /** In reading order. */
+  claims: Array<Pick<Claim, 'id' | 'sectionId' | 'text'>>;
   sectionTitles: ReadonlyMap<string, string>;
 }
 

@@ -31,7 +31,7 @@ function setTheme(theme: Theme) {
     // Storage is blocked: the choice lasts until the page reloads.
   }
   // Match the browser chrome to the page, whatever the OS setting says.
-  const paper = getComputedStyle(document.body).backgroundColor;
+  const paper = getComputedStyle(document.documentElement).backgroundColor;
   for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
     meta.setAttribute('content', paper);
   }

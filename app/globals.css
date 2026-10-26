@@ -21,7 +21,7 @@
   --trace-current: var(--tint-strong);
   --select: light-dark(#e6e9e9, #262c2e);
   /* Chart context marks; the accent marks the series the chart is about. */
-  --mark-muted: light-dark(#8b9397, #6d767a);
+  --mark-muted: light-dark(#80888c, #6d767a);
   --shadow:
     0 1px 2px light-dark(rgb(26 29 30 / 0.06), rgb(0 0 0 / 0.3)),
     0 12px 32px light-dark(rgb(26 29 30 / 0.1), rgb(0 0 0 / 0.4));
@@ -54,9 +54,13 @@
   --font-serif:
     var(--font-source-serif), 'Hiragino Mincho ProN', 'Yu Mincho', YuMincho,
     'Noto Serif JP', 'Noto Serif CJK JP', serif;
+  --font-serif-italic:
+    var(--font-source-serif-italic), 'Hiragino Mincho ProN', 'Yu Mincho',
+    YuMincho, 'Noto Serif JP', 'Noto Serif CJK JP', serif;
   --font-sans:
-    var(--font-source-sans), 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
-    'Yu Gothic', YuGothic, 'Noto Sans JP', 'Noto Sans CJK JP', sans-serif;
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN', 'Yu Gothic', YuGothic, 'Noto Sans JP',
+    'Noto Sans CJK JP', sans-serif;
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -91,6 +95,10 @@
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
+  }
+
+  :is(.report, .brief, .composer-quote, .question-claim, .source-label) em {
+    font-family: var(--font-serif-italic);
   }
 
   ::selection {
@@ -449,6 +457,12 @@
     color: var(--accent);
     font-weight: 600;
     text-decoration: none;
+  }
+
+  /* A link on its own line, not inside a sentence, needs a 24px target. */
+  .brief-link {
+    display: inline-block;
+    padding: 0.1875rem 0;
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -887,6 +901,24 @@
     background: var(--scrim);
   }
 
+  /* iOS's sheet curve. Exit is a touch quicker than entry, and starts from
+     wherever a drag left the sheet. */
+  .sheet-overlay[data-state='open'] {
+    animation: fade-in 300ms var(--ease-drawer);
+  }
+
+  .sheet-overlay[data-state='closed'] {
+    animation: fade-out 220ms var(--ease-drawer);
+  }
+
+  .sheet[data-state='open'] {
+    animation: sheet-in 300ms var(--ease-drawer);
+  }
+
+  .sheet[data-state='closed'] {
+    animation: sheet-out 220ms var(--ease-drawer);
+  }
+
   .sheet {
     position: fixed;
     left: 0;
@@ -959,6 +991,30 @@
   to {
     opacity: 0;
     transform: scale(0.96);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
   }
 }
 
