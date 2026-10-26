@@ -489,6 +489,7 @@ It's committed so it can be re-run.
 42. `next/font/local` names a family after its variable and sizes its loading stand-in from Arial. The fonts are now `sourceSerif` and `sourceSerifItalic`, with a Times New Roman stand-in.
 43. The portfolio's `deploy.yml` builds this repo after the portfolio and copies its export to `out/lunon-living-report/`; that's the only change in `design-eng-prototypes`. The page is live at uzookafor.com/lunon-living-report/ and isn't on the Lab page. Pushing here doesn't redeploy: re-run the portfolio's deploy (it has `workflow_dispatch`).
 44. `BASE_URL` points the browser suite at a deployed copy. All 182 tests pass against the live site.
+45. A shared link unfurls with Open Graph and Twitter tags: the page title, the not-affiliated line, and an image of a source card open beside a chart (`public/og.png`).
 
 ---
 
