@@ -8,19 +8,22 @@ import './globals.css';
 // (scripts/subset-serif.ts) so the first load stays small. Japanese falls
 // back to the system's Mincho. UI, tables and numbers use the system face
 // (see globals.css), so controls feel native and there's one font less.
-const serif = localFont({
+const sourceSerif = localFont({
   src: './fonts/source-serif-4-report.woff2',
   weight: '200 900',
   variable: '--font-source-serif',
+  // Size the stand-in shown while the font loads from a serif, not Arial.
+  adjustFontFallback: 'Times New Roman',
 });
 
 // The italic sets 15 phrases deep in the report, so it isn't preloaded.
-const serifItalic = localFont({
+const sourceSerifItalic = localFont({
   src: './fonts/source-serif-4-report-italic.woff2',
   weight: '400',
   style: 'italic',
   variable: '--font-source-serif-italic',
   preload: false,
+  adjustFontFallback: 'Times New Roman',
 });
 
 export const metadata: Metadata = {
@@ -46,7 +49,7 @@ export default function RootLayout({children}: {children: ReactNode}) {
   return (
     <html
       lang="en"
-      className={`${serif.variable} ${serifItalic.variable}`}
+      className={`${sourceSerif.variable} ${sourceSerifItalic.variable}`}
       suppressHydrationWarning
     >
       <head>
