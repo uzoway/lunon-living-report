@@ -1,6 +1,10 @@
 import {defineConfig, devices} from '@playwright/test';
 
 const PORT = 4310;
+const LOCAL = `http://localhost:${PORT}/lunon-living-report/`;
+// Set BASE_URL to test a deployed copy instead, such as
+// https://uzookafor.com/lunon-living-report/.
+const DEPLOYED = process.env.BASE_URL;
 
 // Runs against the static export under its real prefix: `npm run build`
 // first, then `npm run test:e2e`.
@@ -13,15 +17,17 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   reporter: [['list']],
   use: {
-    baseURL: `http://localhost:${PORT}/lunon-living-report/`,
+    baseURL: DEPLOYED ?? LOCAL,
     trace: 'retain-on-failure',
   },
-  webServer: {
-    command: 'node scripts/serve-export.ts',
-    url: `http://localhost:${PORT}/lunon-living-report/`,
-    env: {PORT: String(PORT)},
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: DEPLOYED
+    ? undefined
+    : {
+        command: 'node scripts/serve-export.ts',
+        url: LOCAL,
+        env: {PORT: String(PORT)},
+        reuseExistingServer: !process.env.CI,
+      },
   // Frame timing means nothing with other tests competing for the CPU, so
   // @perf tests run on their own: `npm run test:perf`.
   projects: [

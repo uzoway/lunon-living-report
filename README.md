@@ -92,7 +92,9 @@ npm run test:e2e   # Playwright in Chrome, WebKit and Firefox
 npm run test:perf  # frame timing, on its own
 ```
 
-`npm run lint` checks ESLint and Prettier; `npm run typecheck` runs `tsc`. The browser suite needs Chrome installed and `npx playwright install webkit firefox` once.
+`npm run lint` checks ESLint and Prettier; `npm run typecheck` runs `tsc`. The browser suite needs Chrome installed and `npx playwright install webkit firefox` once. To test the live site instead of the local export, set `BASE_URL=https://uzookafor.com/lunon-living-report/`.
+
+The live page is part of the portfolio's GitHub Pages deploy, which builds this repo into `/lunon-living-report/`. A push here goes live the next time that deploy runs.
 
 ## Project structure
 

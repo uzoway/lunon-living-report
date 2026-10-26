@@ -485,6 +485,11 @@ It's committed so it can be re-run.
 40. The frame-budget test runs on its own (`npm run test:perf`), since frame timing is meaningless with other tests competing for the CPU.
 41. `AGENTS.md`, which `next dev` writes on every run, is ignored.
 
+**2026-10-26, deploy**
+42. `next/font/local` names a family after its variable and sizes its loading stand-in from Arial. The fonts are now `sourceSerif` and `sourceSerifItalic`, with a Times New Roman stand-in.
+43. The portfolio's `deploy.yml` builds this repo after the portfolio and copies its export to `out/lunon-living-report/`; that's the only change in `design-eng-prototypes`. The page is live at uzookafor.com/lunon-living-report/ and isn't on the Lab page. Pushing here doesn't redeploy: re-run the portfolio's deploy (it has `workflow_dispatch`).
+44. `BASE_URL` points the browser suite at a deployed copy. All 182 tests pass against the live site.
+
 ---
 
 ## Sources

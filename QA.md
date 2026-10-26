@@ -4,9 +4,9 @@ Every check from section 5 of [PRODUCT-NOTES.md](PRODUCT-NOTES.md), how it was t
 
 **Browsers:** Chrome 155 (installed), WebKit 27.2 (Safari's engine, Playwright build 2370), Firefox 157 (Playwright build 1555), on macOS. **Tools:** Node 26 (CI builds on Node 22), Playwright 1.64.1, axe-core 4.14, Lighthouse 12.8.2.
 
-**To re-run:** `npm test`, `npm run build`, `npm run test:e2e`, `npm run test:perf`. Lighthouse was run with its Node API against `npm run preview`.
+**To re-run:** `npm test`, `npm run build`, `npm run test:e2e`, `npm run test:perf`. To run the browser suite against the live site: `BASE_URL=https://uzookafor.com/lunon-living-report/ npm run test:e2e`. Lighthouse was run with its Node API against `npm run preview` and against the live URL.
 
-**Result:** every check that can run here passes: 64 unit tests, 182 browser tests in three browsers (4 skipped where a browser lacks the API), the perf test, and Lighthouse 95 / 100 / 100. Checks that need a real device, VoiceOver or the live site are marked **Needs Uzo**.
+**Result:** every check that can run here passes, locally and on the live site: 64 unit tests, 182 browser tests in three browsers (4 skipped where a browser lacks the API), the perf test, and Lighthouse (95 / 100 / 100 locally, a median of 99 / 100 / 100 live). Checks that need a real device or VoiceOver are marked **Needs Uzo**.
 
 ## Data integrity (unit tests)
 
@@ -80,11 +80,11 @@ Checked at 320, 375, 768, 1024, 1280 and 1440px, light and dark, in Chrome, WebK
 
 | Check | How it was tested | Result | Fix made |
 |---|---|---|---|
-| Lighthouse mobile ≥95 for Performance, Accessibility, Best Practices | Lighthouse 12.8 (simulated slow 4G, 4× CPU) against the export served gzipped like GitHub Pages, three runs | **95 / 100 / 100** on all three runs; LCP 2.9s, FCP 1.4s, TBT 20ms, CLS 0, 330 KB | From 57: gzip in the preview server, a subset Source Serif (38 KB, italic 15 KB not preloaded), system UI face, `motion` removed, claim ids instead of claim text sent to the client, the Sources index rendered after hydration |
+| Lighthouse mobile ≥95 for Performance, Accessibility, Best Practices | Lighthouse 12.8 (simulated slow 4G, 4× CPU), three runs against the export served gzipped like GitHub Pages, then eight runs against the live URL | Local: **95 / 100 / 100** on all three runs (LCP 2.9s, FCP 1.4s, TBT 20ms, CLS 0, 330 KB). Live: Performance **99** median (93, 94, then 99 six times; the two low runs came first, right after the deploy), Accessibility and Best Practices 100 on every run, CLS 0 | From 57: gzip in the preview server, a subset Source Serif (38 KB, italic 15 KB not preloaded), system UI face, `motion` removed, claim ids instead of claim text sent to the client, the Sources index rendered after hydration |
 | No layout shift when opening cards | `motion.spec.ts` sums Layout Instability entries while opening cards in the rail, the questions panel and a trace (Chromium only) | Pass: 0.0 | — |
 | `lint`, `tsc`, `test` and `build` are clean | Run before each commit | Pass | — |
 | Works under `/lunon-living-report/` locally | The whole browser suite runs against `scripts/serve-export.ts`, which serves only that prefix | Pass | — |
-| Works on the live domain | Needs the portfolio deploy step and a push | **Needs Uzo** | — |
+| Works on the live domain | The portfolio's deploy now builds this repo into `/lunon-living-report/` (run 40361550569 succeeded, which is also the first Node 22 build). All 182 browser tests pass against https://uzookafor.com/lunon-living-report/ in three browsers; the page is served gzipped; the portfolio home still serves; the Lab page doesn't list it | Pass | Before deploying, Source Serif's loading stand-in was changed from metric-matched Arial to Times New Roman |
 
 ## Automation
 
@@ -97,4 +97,3 @@ Checked at 320, 375, 768, 1024, 1280 and 1440px, light and dark, in Chrome, WebK
 1. VoiceOver on macOS and on iOS: markers, cards, the trace bar and announcements spoken aloud.
 2. A real iPhone (Safari) and an Android phone (Chrome): layout, the sheet's drag and the header's blur.
 3. `/review-animations`, which only you can start.
-4. The live domain, once the portfolio's deploy step is in and both repos are pushed.
