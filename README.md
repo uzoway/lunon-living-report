@@ -4,7 +4,7 @@ A reading layer for Lunon Deep Research output: the report's evidence, one actio
 
 > Unofficial concept by Uzo Okafor. Not affiliated with Lunon. Report text from Lunon Deep Research (MIT), unmodified.
 
-**Status:** in progress. The parser and its tests are done; the page is next. [PRODUCT-NOTES.md](PRODUCT-NOTES.md) holds the brief and every decision so far.
+**Status:** in progress. The parser, the Brief and the Reader with source cards are done; Trace, provenance labels, charts and questions are next. [PRODUCT-NOTES.md](PRODUCT-NOTES.md) holds the brief and every decision so far.
 
 ## Why this exists
 
@@ -36,10 +36,13 @@ Needs Node 22.18 or later.
 
 ```bash
 npm ci
+npm run dev
 npm test
 npm run lint
-npm run typecheck
+npm run build
 ```
+
+The dev server serves the page at `localhost:3000/lunon-living-report/`.
 
 ## Credits and license
 

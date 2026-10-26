@@ -1,3 +1,5 @@
+import type {Source} from './types.ts';
+
 /**
  * The report was written in 2026, so a later year in a label is a forecast
  * horizon ("Market Outlook 2033"), not when the source was published.
@@ -34,4 +36,13 @@ export function yearOf(label: string): number | undefined {
     if (year <= LATEST_YEAR) return year;
   }
   return undefined;
+}
+
+/**
+ * How the page names a source in tight spots: its number and domain, such as
+ * "[1] ipss.go.jp". Labels can't be shortened by rule, and 61 sources share
+ * 50 domains, so the number keeps it unique.
+ */
+export function shortName(source: Pick<Source, 'number' | 'domain'>): string {
+  return `[${source.number}] ${source.domain}`;
 }

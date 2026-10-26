@@ -168,9 +168,9 @@ Only chart tables that are numeric series. Each chart has direct labels instead 
 Numbers never count up. This is evidence, not a landing page.
 
 ### Typography
-Pick one face for long reading and one for UI, tables and numbers, and write the reasoning in the README. Starting point:
+One face for long reading and one for UI, tables and numbers, with the reasoning in the README:
 - **Source Serif 4** for body text. It has optical sizes for comfortable long reading.
-- **Inter** for UI and data, with `tnum` turned on.
+- **Source Sans 3** for UI and data, with tabular figures (the original brief suggested Inter). It's drawn as a companion to Source Serif, and Japanese falls back to the same lineage (Source Han, shipped as Noto CJK, plus Hiragino and Yu on Apple and Windows), so the CJK glyphs sit with the Latin.
 
 The report contains a lot of Japanese text (about 1,200 characters, for example 食料 and 約140兆円):
 - Set a CJK fallback stack and check that the glyphs render at the same weight and baseline.
@@ -206,10 +206,11 @@ Follow Emil Kowalski's rules: animate only when it helps the reader understand, 
 - Landmarks and a skip link.
 - Heading levels match the report.
 - Visible focus everywhere.
-- Popovers trap and return focus, and Escape closes them.
+- Popovers keep and return focus, and Escape closes them (see the source card note below).
 - A polite live region announces things like "Showing 29 claims that cite [1] ipss.go.jp".
 - Every control can be used by keyboard.
-- Markers have accessible names, for example "Sources: [1] ipss.go.jp and 2 more".
+- Markers have accessible names that start with their visible text (WCAG 2.5.3), for example "Source: [1] ipss.go.jp" or "3 sources: [5] vantainsights.com and 2 more".
+- Source cards on desktop and tablet are non-modal: focus moves into the card, Tab loops inside it, Escape and the close button return focus to the marker, and the page keeps scrolling. The mobile sheet is a modal dialog with a focus trap.
 
 ---
 
@@ -450,6 +451,15 @@ It's committed so it can be re-run.
 12. The parser rejoins sentences that `Intl.Segmenter` splits at "vs." before a number.
 13. Thematic breaks are dropped (each one sits right before a top-level heading). A test checks that.
 14. Population table 2.1 is charted as two lines (total and 65+). Its 高齢化率 column has a range ("~36–37"), so it stays in the table.
+
+**2026-10-26, step (b): Brief and Reader**
+15. Desktop and tablet source cards are non-modal Radix popovers. Radix's modal popover locks page scrolling, hides the page from screen readers and swallows the click on the next marker. A sidenote shouldn't do any of that. Focus still moves into the card, Tab loops inside it, and Escape or Close returns focus to the marker. The mobile sheet is modal.
+16. UI face: Source Sans 3 instead of Inter, for the Source Serif and Source Han pairing (see Typography).
+17. Colors are defined once with CSS `light-dark()`, which needs Safari 17.5 or later.
+18. A cluster marker shows its count with a stacked-card edge, so "3" doesn't read as source 3. Its accessible name starts with the count.
+19. Markers are plain server-rendered buttons. One click listener on the page opens cards, so the 180 markers ship no JavaScript and opening a card never re-renders the text.
+20. Japanese runs of up to 8 characters don't break across lines (住居 stays whole), and year ranges in headings stay on one line.
+21. The reading column is 37rem: 64–67 characters per line measured in WebKit and Chrome.
 
 ---
 

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import {domainOf, normalizeUrl, yearOf} from './sources.ts';
+import {domainOf, normalizeUrl, shortName, yearOf} from './sources.ts';
 
 describe('normalizeUrl', () => {
   it('lowercases the host and drops the fragment', () => {
@@ -76,6 +76,15 @@ describe('yearOf', () => {
         '"Dissaving by the Elderly in Japan: Empirical Evidence from Survey Data," Seoul Journal of'
       ),
       undefined
+    );
+  });
+});
+
+describe('shortName', () => {
+  it('pairs the source number with its domain', () => {
+    assert.equal(
+      shortName({number: 1, domain: 'ipss.go.jp'}),
+      '[1] ipss.go.jp'
     );
   });
 });
