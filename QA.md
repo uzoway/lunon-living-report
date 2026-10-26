@@ -6,7 +6,7 @@ Every check from section 5 of [PRODUCT-NOTES.md](PRODUCT-NOTES.md), how it was t
 
 **To re-run:** `npm test`, `npm run build`, `npm run test:e2e`, `npm run test:perf`. To run the browser suite against the live site: `BASE_URL=https://uzookafor.com/lunon-living-report/ npm run test:e2e`. Lighthouse was run with its Node API against `npm run preview` and against the live URL.
 
-**Result:** every check that can run here passes, locally and on the live site: 64 unit tests, 182 browser tests in three browsers (4 skipped where a browser lacks the API), the perf test, and Lighthouse (95 / 100 / 100 locally, a median of 99 / 100 / 100 live). Checks that need a real device or VoiceOver are marked **Needs Uzo**.
+**Result:** every check that can run here passes, locally and on the live site: 64 unit tests, 182 browser tests in three browsers (4 skipped where a browser lacks the API), the perf test, and Lighthouse (95 / 100 / 100 locally, a median of 99 / 100 / 100 live). Uzo checked VoiceOver, real phones and `/review-animations` on 26 October 2026; all passed.
 
 ## Data integrity (unit tests)
 
@@ -50,7 +50,7 @@ Checked at 320, 375, 768, 1024, 1280 and 1440px, light and dark, in Chrome, WebK
 | Tables scroll in their own container on small screens | At 320 and 375px at least one table scrolls inside its box while the page doesn't | Pass | — |
 | Japanese renders correctly | Every Japanese run in the page is inside `lang="ja"` (tested); glyphs checked in screenshots at matching weight in light and dark | Pass | Chart summaries now mark their Japanese |
 | The margin rail never covers text | At 1280 and 1440px, cards for the first, a middle and the last source sit right of the reading column and inside the window | Pass | — |
-| iOS Safari and Android Chrome | Phone layouts run in WebKit and Chrome at 375px with touch, but not on devices | **Needs Uzo** | — |
+| iOS Safari and Android Chrome | Phone layouts run in WebKit and Chrome at 375px with touch; Uzo checked layout, the sheet and the header blur on an iPhone (Safari) and an Android phone (Chrome) | Pass (Uzo) | — |
 
 **Worst-case data** (`tests/break.spec.ts`; the `break-ui` skill isn't installed, so these are the cases the brief lists): a ten-source cluster lists all ten and scrolls inside the card; a 664-character label ending in a 160-character unbroken word wraps inside the card; a label cut off mid-word ("…Seoul Journal of") is shown as written with no invented year; empty and whitespace-only questions can't be saved; a 2,300-character question with a 300-character unbroken word wraps in the panel. All pass on desktop and phone, in three browsers.
 
@@ -58,13 +58,13 @@ Checked at 320, 375, 768, 1024, 1280 and 1440px, light and dark, in Chrome, WebK
 
 | Check | How it was tested | Result | Fix made |
 |---|---|---|---|
-| `review-animations` | It can only be started by Uzo | **Needs Uzo** (`/review-animations`) | — |
+| `review-animations` | Run by Uzo | Pass (Uzo) | — |
 | `animation-performance` | Not installed. The frame-budget test covers what the brief asks of it (below) | Covered by the perf test | — |
 | Timing and origin, slowed down | Chrome DevTools Protocol at 0.25× speed, frames captured: cards scale from their top-left, the corner beside the marker's line. `motion.spec.ts` reads the running animations: card in 160ms on `cubic-bezier(0.23, 1, 0.32, 1)`, out 110ms; trace tint 180ms; trace bar 200ms. The sheet runs `sheet-in` for 0.3s on `cubic-bezier(0.32, 0.72, 0, 1)` and, sampled each frame, settles by 298ms | Pass | — |
 | No `transition: all`, nothing from `scale(0)`, nothing on keyboard-repeated actions | `motion.spec.ts`: no element transitions `all`; the built CSS has no `scale(0)`; trace steps from the keyboard jump within two frames and the current highlight has no transition | Pass | — |
 | Reduced motion makes everything instant | `motion.spec.ts` with `reducedMotion: 'reduce'`: no running animations with any duration, and the sheet is in place on the next frame | Pass | — |
 | No frame drops while scrolling and tracing | `npm run test:perf` (Chrome, on its own): wheel-scrolls the report and steps a trace. Under 1% of frames over two 60Hz frames, no long tasks | Pass | — |
-| Sheet drag on real touch | Mouse-driven drags pass in three browsers (follow 1:1, flick closes, short drag springs back) | **Needs Uzo** on an iPhone for feel | The drag was rewritten after Motion's missed a grab mid-slide and didn't dismiss in Firefox |
+| Sheet drag on real touch | Mouse-driven drags pass in three browsers (follow 1:1, flick closes, short drag springs back); Uzo checked the feel on real phones | Pass (Uzo) | The drag was rewritten after Motion's missed a grab mid-slide and didn't dismiss in Firefox |
 
 ## Accessibility
 
@@ -72,7 +72,7 @@ Checked at 320, 375, 768, 1024, 1280 and 1440px, light and dark, in Chrome, WebK
 |---|---|---|---|
 | axe reports zero violations on every state | `a11y.spec.ts` and `flows.spec.ts`, light and dark: page, card (rail, popover, sheet), trace, provenance on, every chart as a table, questions panel and composer, Contents menu | Pass, 3 browsers | The Contents popover has a name; cluster markers' names start with their visible count |
 | Full keyboard run: no traps, visible focus, logical order | `a11y.spec.ts` tabs through every control on the page in Chrome and Firefox: each is reached once, in document order, with a focus ring. Cards keep focus while open and return it to the marker | Pass. Safari tabs only to form fields by default, so WebKit is skipped | — |
-| VoiceOver on macOS and iOS | Names and roles checked in the accessibility tree (marker names, card titles, live region text, chart summaries) | **Needs Uzo** to listen | — |
+| VoiceOver on macOS and iOS | Names and roles checked in the accessibility tree; Uzo listened with VoiceOver on macOS and iOS (markers, cards, focus return, trace and question announcements) | Pass (Uzo) | — |
 | Contrast is AA in both themes | axe's contrast rule on every state; token pairs computed (ink 15.5:1 light, 14.9:1 dark; muted text 6.8:1 and 7.7:1; accent 6.9:1 and 9.5:1; chart marks at least 3.3:1) | Pass | Chart gray darkened from 2.86:1 to 3.3:1 |
 | Targets are at least 24×24px | `layout.spec.ts` measures every control; markers are checked by hit-testing 11.5px from their center in four directions | Pass | "Read them in full" link given a 24px target |
 
@@ -92,8 +92,8 @@ Checked at 320, 375, 768, 1024, 1280 and 1440px, light and dark, in Chrome, WebK
 |---|---|---|
 | A committed Playwright suite that walks the main flows, screenshots each viewport in both themes, and runs axe | `tests/` (six files), `playwright.config.ts`, `npm run test:e2e` and `npm run test:perf` | Committed; 182 tests pass in three browsers |
 
-## Needs Uzo
+## Checked by Uzo
 
-1. VoiceOver on macOS and on iOS: markers, cards, the trace bar and announcements spoken aloud.
-2. A real iPhone (Safari) and an Android phone (Chrome): layout, the sheet's drag and the header's blur.
-3. `/review-animations`, which only you can start.
+1. VoiceOver on macOS and on iOS: markers, cards, the trace bar and announcements spoken aloud. Pass.
+2. A real iPhone (Safari) and an Android phone (Chrome): layout, the sheet's drag and the header's blur. Pass.
+3. `/review-animations`. Pass.
