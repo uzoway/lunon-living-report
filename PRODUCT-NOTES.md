@@ -169,8 +169,8 @@ Numbers never count up. This is evidence, not a landing page.
 
 ### Typography
 One face for long reading and one for UI, tables and numbers, with the reasoning in the README:
-- **Source Serif 4** for body text. It has optical sizes for comfortable long reading.
-- **Source Sans 3** for UI and data, with tabular figures (the original brief suggested Inter). It's drawn as a companion to Source Serif, and Japanese falls back to the same lineage (Source Han, shipped as Noto CJK, plus Hiragino and Yu on Apple and Windows), so the CJK glyphs sit with the Latin.
+- **Source Serif 4** for the report and the Brief, subset to the characters report 51 uses so the first load stays small (`scripts/subset-serif.ts`). Japanese falls back to Hiragino Mincho, Yu Mincho or Noto Serif CJK.
+- **The system UI face** for UI, tables and numbers (SF Pro on Apple, Segoe UI on Windows, Roboto on Android), with tabular figures. The original brief suggested Inter; step (c) used Source Sans 3. The system face feels native, sets Japanese UI text in the platform's own Japanese font, and is one font less to download.
 
 The report contains a lot of Japanese text (about 1,200 characters, for example 食料 and 約140兆円):
 - Set a CJK fallback stack and check that the glyphs render at the same weight and baseline.
@@ -219,14 +219,14 @@ Follow Emil Kowalski's rules: animate only when it helps the reader understand, 
 ### Stack
 Match the portfolio so both are reviewed against the same standard:
 - Next.js 16 (App Router), React 19 and TypeScript in strict mode. Next is pinned to 16.4.3 because 16.3.0 has critical security advisories.
-- Tailwind CSS 4 and `motion`.
+- Tailwind CSS 4. `motion` was in the original stack and was removed in step (d): the motion here is CSS keyframes and transitions, plus the Web Animations API for the sheet's spring back.
 - Radix primitives (Popover, Dialog).
 - `unified`, `remark-parse` and `remark-gfm` for parsing.
 
 Additions, each with its reason:
 - `@types/mdast`: types for the markdown tree the parser walks. It was only a transitive dependency.
 - `prettier`, set up like Google's `gts`: applies the Google style's formatting mechanically. `npm run lint` checks it.
-- Playwright and `@axe-core/playwright` (added with the QA step): section 5 requires an automated suite and axe.
+- Playwright and `@axe-core/playwright`: section 5 requires an automated suite and axe.
 
 Tests use Node's built-in runner with type stripping, so `npm test` needs Node 22.18 or later and no extra tooling.
 
@@ -472,6 +472,18 @@ It's committed so it can be re-run.
 29. Provenance labels are rendered on the server and hidden with CSS, so turning them on sets one attribute. They stay on the same line as the end of their sentence.
 30. Header: Provenance and Questions sit beside the theme toggle. On phones they're icons that keep their names for screen readers, and the brand text is hidden below 400px.
 31. The Sources index follows the report's empty References heading, labelled as built by this page, with a "Show every claim" button for each source.
+
+**2026-10-26, step (d): QA**
+32. Bug fixed: closing a panel handed focus back after its exit animation even if the reader had opened a source card in the meantime, which closed the card. A panel now returns focus only if nothing else has taken it.
+33. Bug fixed: the sheet's drag (Motion's) missed a grab while the sheet slid in and, in Firefox, didn't dismiss. The drag is now plain pointer events with pointer capture. It catches the sheet mid-flight, resists upward drags with a rubber band, reads release velocity over the last 100ms, and springs back with the Web Animations API.
+34. Bug fixed: the theme toggle set the browser's theme-color from `body`, which is transparent. It now reads the page's background.
+35. Bug fixed: the Contents popover had no accessible name (axe), and chart summaries didn't mark their Japanese `lang="ja"`.
+36. Lighthouse mobile Performance went from 57 to 95. The preview server now gzips, as GitHub Pages does (57 was mostly uncompressed text). Source Serif dropped its optical-size axis and was subset to the report's 107 characters, a 38 KB upright file and a 15 KB italic that isn't preloaded. UI moved to the system face (see Typography; this replaces 16). `motion` was removed. The client gets claim ids, sections and sources rather than every sentence's text, and the questions panel reads text from the page. The Sources index renders after hydration.
+37. Tried and reverted: `content-visibility: auto` on report blocks loaded faster, but claims moved while a trace scrolled to them, because blocks above changed size as they rendered.
+38. The chart gray is now `#80888c` in light mode, 3.3:1 on the paper (it was 2.86:1).
+39. The QA skills: `review-animations` can only be started by Uzo (`/review-animations`); `animation-performance` and `break-ui` aren't installed. The suite covers what the brief asks of them: timings, origins, reduced motion, frame budget and worst-case data.
+40. The frame-budget test runs on its own (`npm run test:perf`), since frame timing is meaningless with other tests competing for the CPU.
+41. `AGENTS.md`, which `next dev` writes on every run, is ignored.
 
 ---
 
